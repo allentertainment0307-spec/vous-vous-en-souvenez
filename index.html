@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vous vous en souvenez ?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <h1>Vous vous en souvenez ?</h1>
+    <p class="subtitle">La collection des dessins animés évoqués sur la chaîne</p>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Chercher un dessin animé..." aria-label="Rechercher un dessin animé">
+    <p id="count" class="count"></p>
+  </div>
+
+  <div id="grid" class="grid"></div>
+  <p id="empty" class="empty" hidden>Aucun dessin animé ne correspond à ta recherche.</p>
+</main>
+
+<div id="modal" class="modal" hidden>
+  <div class="modal-card">
+    <button id="close-modal" class="close-btn" aria-label="Fermer">&times;</button>
+    <p id="modal-title" class="modal-title"></p>
+    <div class="video-wrap">
+      <iframe id="yt-frame" src="" allow="autoplay" allowfullscreen></iframe>
+    </div>
+    <p id="modal-meta" class="modal-meta"></p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

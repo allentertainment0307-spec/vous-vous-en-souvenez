@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Nom du dessin animé",
+    "image": "https://via.placeholder.com/300x225?text=Image",
+    "videoId": "dQw4w9WgXcQ",
+    "videoTitle": "Titre de la vidéo YouTube où tu en parles",
+    "timestamp": 125
+  },
+  {
+    "name": "Un autre dessin animé",
+    "image": "https://via.placeholder.com/300x225?text=Image",
+    "videoId": "dQw4w9WgXcQ",
+    "videoTitle": "Titre de la vidéo YouTube où tu en parles",
+    "timestamp": 340
+  }
+]
