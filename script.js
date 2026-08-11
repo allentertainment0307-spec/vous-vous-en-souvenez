@@ -33,8 +33,7 @@ function renderGrid(list) {
 
     const body = document.createElement("div");
     body.className = "card-body";
-    body.innerHTML =
-      '<p class="card-name"></p><p class="card-time"></p>';
+    body.innerHTML = '<p class="card-name"></p><p class="card-time"></p>';
     body.querySelector(".card-name").textContent = item.name;
     body.querySelector(".card-time").textContent = "\u25B6 " + formatTime(item.timestamp);
 
@@ -83,5 +82,5 @@ fetch("data.json")
   })
   .catch(() => {
     document.getElementById("grid").innerHTML =
-      '<p style="color:#e07a5f">Impossible de charger data.json. Vérifie que le fichier est bien dans le même dossier.</p>';
+      '<p style="color:#c0392b">Impossible de charger data.json. Vérifie que le fichier est bien dans le même dossier.</p>';
   });
