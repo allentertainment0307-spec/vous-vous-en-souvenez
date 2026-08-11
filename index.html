@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vous vous en souvenez ?</title>
+<title>Vous vous en souvenez ? Les dessins animés oubliés de notre enfance</title>
+<meta name="description" content="La collection des dessins animés oubliés évoqués dans la série Vous vous en souvenez : clique sur un dessin animé pour revoir directement le passage où on en parle.">
+<meta property="og:title" content="Vous vous en souvenez ? Les dessins animés oubliés">
+<meta property="og:description" content="Redécouvre les dessins animés oubliés de ton enfance, avec un lien direct vers le moment où on en parle en vidéo.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +18,7 @@
 <header class="site-header">
   <div class="header-inner">
     <h1>Vous vous en souvenez ?</h1>
-    <p class="subtitle">La collection des dessins animés évoqués sur la chaîne</p>
+    <p class="subtitle">Les dessins animés oubliés sur la chaîne ABDAL_JEL</p>
   </div>
 </header>
 
@@ -27,6 +31,19 @@
   <div id="grid" class="grid"></div>
   <p id="empty" class="empty" hidden>Aucun dessin animé ne correspond à ta recherche.</p>
 </main>
+
+<!-- Tes données sont ici. Modifie cette liste pour ajouter/changer des dessins animés. -->
+<script type="application/json" id="cartoons-data">
+[
+  {
+    "name": "Nom du dessin animé",
+    "image": "URL_IMAGE_ICI",
+    "videoId": "ID_VIDEO_YOUTUBE_ICI",
+    "videoTitle": "Titre de la vidéo",
+    "timestamp": 0
+  }
+]
+</script>
 
 <div id="modal" class="modal" hidden>
   <div class="modal-card">
