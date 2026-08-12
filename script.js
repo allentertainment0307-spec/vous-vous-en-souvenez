@@ -12,13 +12,13 @@ function getFilteredSorted() {
   let list = allCartoons.filter((c) => c.name.toLowerCase().includes(q));
 
   if (currentSort === "year-desc") {
-    list = list.slice().sort((a, b) => (b.releaseYear || 0) - (a.releaseYear || 0));
+    list = list.slice().sort((a, b) => (b.releaseYear || 0) - (a.releaseYear || 0) || (a._order - b._order));
   } else if (currentSort === "year-asc") {
-    list = list.slice().sort((a, b) => (a.releaseYear || 0) - (b.releaseYear || 0));
-  } else if (currentSort === "video-desc") {
-    list = list.slice().sort((a, b) => b._order - a._order);
-  } else if (currentSort === "video-asc") {
-    list = list.slice().sort((a, b) => a._order - b._order);
+    list = list.slice().sort((a, b) => (a.releaseYear || 0) - (b.releaseYear || 0) || (a._order - b._order));
+  } else {
+    // video-desc (par défaut) : groupe par vidéo (la vidéo la plus récente en premier),
+    // en gardant l'ordre d'apparition des dessins animés à l'intérieur de chaque vidéo.
+    list = list.slice().sort((a, b) => (b._groupOrder - a._groupOrder) || (a._order - b._order));
   }
 
   return list;
@@ -98,7 +98,21 @@ document.getElementById("sort").addEventListener("change", (e) => {
 fetch("data.json")
   .then((res) => res.json())
   .then((data) => {
-    allCartoons = data.map((item, index) => Object.assign({ _order: index }, item));
+    // _order : position d'origine dans data.json (pour garder l'ordre interne à une vidéo).
+    // _groupOrder : rang de la vidéo elle-même, dans l'ordre où elle apparaît la première
+    // fois dans data.json (donc plus l'entrée est bas dans le fichier, plus sa vidéo est récente).
+    const groupOrderByVideoId = {};
+    let nextGroupOrder = 0;
+    data.forEach((item) => {
+      if (!(item.videoId in groupOrderByVideoId)) {
+        groupOrderByVideoId[item.videoId] = nextGroupOrder;
+        nextGroupOrder += 1;
+      }
+    });
+
+    allCartoons = data.map((item, index) =>
+      Object.assign({ _order: index, _groupOrder: groupOrderByVideoId[item.videoId] }, item)
+    );
     renderGrid();
   })
   .catch(() => {
