@@ -1,5 +1,5 @@
 let allCartoons = [];
-let currentSort = "video-desc";
+let currentSort = "video-desc"; // état par défaut : groupé par vidéo, la plus récente en premier
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -16,12 +16,20 @@ function getFilteredSorted() {
   } else if (currentSort === "year-asc") {
     list = list.slice().sort((a, b) => (a.releaseYear || 0) - (b.releaseYear || 0) || (a._order - b._order));
   } else {
-    // video-desc (par défaut) : groupe par vidéo (la vidéo la plus récente en premier),
+    // video-desc (par défaut) : groupe par vidéo (la plus récente en premier),
     // en gardant l'ordre d'apparition des dessins animés à l'intérieur de chaque vidéo.
     list = list.slice().sort((a, b) => (b._groupOrder - a._groupOrder) || (a._order - b._order));
   }
 
   return list;
+}
+
+function updateSortButtons() {
+  document.querySelectorAll(".sort-btn").forEach((btn) => {
+    const isActive = btn.dataset.sort === currentSort;
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
 }
 
 function renderGrid() {
@@ -90,9 +98,14 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.getElementById("search").addEventListener("input", renderGrid);
-document.getElementById("sort").addEventListener("change", (e) => {
-  currentSort = e.target.value;
-  renderGrid();
+
+document.querySelectorAll(".sort-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    // Reclique sur le tri déjà actif : retour à l'ordre par défaut (vidéo la plus récente en premier).
+    currentSort = currentSort === btn.dataset.sort ? "video-desc" : btn.dataset.sort;
+    updateSortButtons();
+    renderGrid();
+  });
 });
 
 fetch("data.json")
@@ -113,6 +126,7 @@ fetch("data.json")
     allCartoons = data.map((item, index) =>
       Object.assign({ _order: index, _groupOrder: groupOrderByVideoId[item.videoId] }, item)
     );
+    updateSortButtons();
     renderGrid();
   })
   .catch(() => {
