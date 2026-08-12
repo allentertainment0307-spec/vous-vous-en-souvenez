@@ -311,24 +311,6 @@ main {
 
 .close-btn:hover { color: var(--text); }
 
-.mute-btn {
-  position: absolute;
-  top: 0.85rem;
-  left: 0.85rem;
-  background: rgba(0, 0, 0, 0.4);
-  border: none;
-  border-radius: 50%;
-  width: 34px;
-  height: 34px;
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-}
-
 .modal-title {
   font-weight: 600;
   font-size: 1.05rem;
@@ -462,10 +444,5 @@ main {
     border-radius: 50%;
     width: 34px;
     height: 34px;
-  }
-
-  .mute-btn {
-    top: 1rem;
-    left: 1rem;
   }
 }
