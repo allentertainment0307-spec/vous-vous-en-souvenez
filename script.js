@@ -216,17 +216,20 @@ document.getElementById("modal").addEventListener("wheel", (e) => {
 // Navigation au swipe (mobile uniquement) : la vidéo suit le doigt en temps réel.
 // Vertical -> dessin animé suivant/précédent ("s'aimante" si le geste est assez ample,
 // sinon revient à sa place). Horizontal -> ferme la fenêtre et revient à la page
-// principale. Un tap simple (peu de mouvement) met en pause/relance la vidéo.
+// principale. Un tap franc (peu de mouvement ET geste rapide) met en pause/relance la
+// vidéo — un swipe raté (mouvement plus ample ou plus lent) ne déclenche jamais la pause.
 const modalCard = document.querySelector(".modal-card");
 const modalEl = document.getElementById("modal");
 let touchStartX = null;
 let touchStartY = null;
+let touchStartTime = 0;
 let touchDeltaX = 0;
 let touchDeltaY = 0;
 
 modalEl.addEventListener("touchstart", (e) => {
   touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
+  touchStartTime = Date.now();
   touchDeltaX = 0;
   touchDeltaY = 0;
   modalCard.style.transition = "none";
@@ -246,11 +249,18 @@ modalEl.addEventListener("touchend", () => {
   modalCard.style.transition = "transform 0.25s ease";
 
   const isMobile = window.innerWidth <= 700;
-  const tapThreshold = 10; // en dessous de ça (sur les 2 axes), on considère que c'est un tap
+  const tapDistanceThreshold = 8; // un vrai tap ne bouge presque pas...
+  const tapDurationThreshold = 250; // ...et dure moins de 250ms (sinon c'est un appui long/glissement lent)
   const swipeThreshold = 90; // pixels à glisser avant que ça compte comme un swipe volontaire
   const horizontalDominant = Math.abs(touchDeltaX) > Math.abs(touchDeltaY);
+  const gestureDuration = Date.now() - touchStartTime;
 
-  if (Math.abs(touchDeltaX) < tapThreshold && Math.abs(touchDeltaY) < tapThreshold) {
+  const isTap =
+    Math.abs(touchDeltaX) < tapDistanceThreshold &&
+    Math.abs(touchDeltaY) < tapDistanceThreshold &&
+    gestureDuration < tapDurationThreshold;
+
+  if (isTap) {
     modalCard.style.transform = "translate(0, 0)";
     togglePlayPause();
     return;
@@ -315,6 +325,15 @@ document.getElementById("search").addEventListener("input", renderGrid);
 document.getElementById("sort").addEventListener("change", (e) => {
   currentSort = e.target.value;
   renderGrid();
+});
+
+// Bouton retour en haut : apparaît après un peu de scroll, ramène en haut au clic.
+const backToTopBtn = document.getElementById("back-to-top");
+window.addEventListener("scroll", () => {
+  backToTopBtn.hidden = window.scrollY < 400;
+});
+backToTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
 fetch("data.json")
