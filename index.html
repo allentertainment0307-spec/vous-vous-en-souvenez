@@ -23,12 +23,13 @@
 </header>
 
 <main>
- <div class="toolbar">
+  <div class="toolbar">
     <input type="text" id="search" placeholder="Chercher un dessin animé..." aria-label="Rechercher un dessin animé">
-    <div class="sort-buttons" role="group" aria-label="Trier">
-      <button type="button" class="sort-btn" id="sort-year-desc" data-sort="year-desc">Dessin animé : plus récent</button>
-      <button type="button" class="sort-btn" id="sort-year-asc" data-sort="year-asc">Dessin animé : plus ancien</button>
-    </div>
+    <select id="sort" aria-label="Trier">
+      <option value="video-desc">Vidéo la plus récente (par défaut)</option>
+      <option value="year-desc">Dessin animé : plus récent</option>
+      <option value="year-asc">Dessin animé : plus ancien</option>
+    </select>
     <p id="count" class="count"></p>
   </div>
 
