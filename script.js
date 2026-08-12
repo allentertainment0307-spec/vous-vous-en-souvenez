@@ -1,5 +1,5 @@
 let allCartoons = [];
-let currentSort = "video-desc"; // état par défaut : groupé par vidéo, la plus récente en premier
+let currentSort = "video-desc"; // état par défaut : groupé par vidéo, épisode le plus récent en premier
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -16,9 +16,9 @@ function getFilteredSorted() {
   } else if (currentSort === "year-asc") {
     list = list.slice().sort((a, b) => (a.releaseYear || 0) - (b.releaseYear || 0) || (a._order - b._order));
   } else {
-    // video-desc (par défaut) : groupe par vidéo (la plus récente en premier),
-    // en gardant l'ordre d'apparition des dessins animés à l'intérieur de chaque vidéo.
-    list = list.slice().sort((a, b) => (b._groupOrder - a._groupOrder) || (a._order - b._order));
+    // video-desc (par défaut) : trie par numéro d'épisode (le plus récent en premier),
+    // en gardant l'ordre d'apparition des dessins animés à l'intérieur d'une même vidéo.
+    list = list.slice().sort((a, b) => ((b.episode || 0) - (a.episode || 0)) || (a._order - b._order));
   }
 
   return list;
@@ -98,21 +98,7 @@ document.getElementById("sort").addEventListener("change", (e) => {
 fetch("data.json")
   .then((res) => res.json())
   .then((data) => {
-    // _order : position d'origine dans data.json (pour garder l'ordre interne à une vidéo).
-    // _groupOrder : rang de la vidéo elle-même, dans l'ordre où elle apparaît la première
-    // fois dans data.json (donc plus l'entrée est bas dans le fichier, plus sa vidéo est récente).
-    const groupOrderByVideoId = {};
-    let nextGroupOrder = 0;
-    data.forEach((item) => {
-      if (!(item.videoId in groupOrderByVideoId)) {
-        groupOrderByVideoId[item.videoId] = nextGroupOrder;
-        nextGroupOrder += 1;
-      }
-    });
-
-    allCartoons = data.map((item, index) =>
-      Object.assign({ _order: index, _groupOrder: groupOrderByVideoId[item.videoId] }, item)
-    );
+    allCartoons = data.map((item, index) => Object.assign({ _order: index }, item));
     renderGrid();
   })
   .catch(() => {
