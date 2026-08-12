@@ -28,10 +28,8 @@ function renderGrid() {
   const list = getFilteredSorted();
   const grid = document.getElementById("grid");
   const empty = document.getElementById("empty");
-  const count = document.getElementById("count");
 
   grid.innerHTML = "";
-  count.textContent = list.length + (list.length > 1 ? " dessins animés" : " dessin animé");
 
   if (list.length === 0) {
     empty.hidden = false;
@@ -52,14 +50,24 @@ function renderGrid() {
 
     const body = document.createElement("div");
     body.className = "card-body";
-    body.innerHTML =
-      '<p class="card-name"></p><p class="card-meta"></p><p class="card-time"></p>';
+    body.innerHTML = '<p class="card-name"></p><p class="card-meta"></p>';
     body.querySelector(".card-name").textContent = item.name;
     body.querySelector(".card-meta").textContent = item.releaseYear ? String(item.releaseYear) : "";
 
     card.appendChild(img);
     card.appendChild(body);
     card.addEventListener("click", () => openModal(item));
+
+    // Effet spotlight : au survol, la carte grossit/s'illumine, les autres s'assombrissent.
+    card.addEventListener("mouseenter", () => {
+      grid.classList.add("grid-hovering");
+      card.classList.add("hovered");
+    });
+    card.addEventListener("mouseleave", () => {
+      grid.classList.remove("grid-hovering");
+      card.classList.remove("hovered");
+    });
+
     grid.appendChild(card);
   });
 }
@@ -94,6 +102,15 @@ document.getElementById("sort").addEventListener("change", (e) => {
   renderGrid();
 });
 
+// Bouton retour en haut : apparaît après un peu de scroll, ramène en haut au clic.
+const backToTopBtn = document.getElementById("back-to-top");
+window.addEventListener("scroll", () => {
+  backToTopBtn.hidden = window.scrollY < 400;
+});
+backToTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
 fetch("data.json")
   .then((res) => res.json())
   .then((data) => {
@@ -102,5 +119,5 @@ fetch("data.json")
   })
   .catch(() => {
     document.getElementById("grid").innerHTML =
-      '<p style="color:#c0392b">Impossible de charger data.json. Vérifie que le fichier est bien dans le même dossier.</p>';
+      '<p style="color:#ff6b6b">Impossible de charger data.json. Vérifie que le fichier est bien dans le même dossier.</p>';
   });
