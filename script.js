@@ -184,6 +184,23 @@ document.getElementById("modal").addEventListener("wheel", (e) => {
   }
 }, { passive: false });
 
+// Navigation au swipe vertical (mobile) : équivalent tactile de la molette.
+let touchStartY = null;
+document.getElementById("modal").addEventListener("touchstart", (e) => {
+  touchStartY = e.touches[0].clientY;
+});
+document.getElementById("modal").addEventListener("touchend", (e) => {
+  if (touchStartY === null) return;
+  const deltaY = e.changedTouches[0].clientY - touchStartY;
+  touchStartY = null;
+  if (Math.abs(deltaY) < 50) return; // ignore les petits mouvements (tap, léger tremblement)
+  if (deltaY < 0) {
+    showNextInModal();
+  } else {
+    showPrevInModal();
+  }
+});
+
 document.getElementById("close-modal").addEventListener("click", closeModal);
 document.getElementById("modal").addEventListener("click", (e) => {
   if (e.target.id === "modal") closeModal();
