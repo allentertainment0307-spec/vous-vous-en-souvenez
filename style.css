@@ -75,19 +75,33 @@ main {
 }
 
 #sort {
-  padding: 0.65rem 0.9rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0.65rem 2.2rem 0.65rem 0.9rem;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background-color: var(--surface);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%236b6f76' d='M5.5 7.5l4.5 4.5 4.5-4.5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 16px;
   color: var(--text);
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+#sort:hover {
+  border-color: var(--text);
 }
 
 #sort:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .card-meta {
