@@ -311,6 +311,24 @@ main {
 
 .close-btn:hover { color: var(--text); }
 
+.mute-btn {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
 .modal-title {
   font-weight: 600;
   font-size: 1.05rem;
@@ -349,6 +367,10 @@ main {
    (la navigation se fait par un swipe vertical au doigt, gérée en JS). Le fond derrière
    la vidéo est une version floutée de la miniature YouTube de cette même vidéo. */
 .modal-bg {
+  display: none;
+}
+
+.touch-catcher {
   display: none;
 }
 
@@ -401,6 +423,15 @@ main {
     border-radius: 0;
   }
 
+  /* Couche invisible par-dessus la vidéo : sans elle, le doigt touche directement
+     l'iframe YouTube et le swipe ne peut jamais atteindre notre JS. */
+  .touch-catcher {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
   .modal-title,
   .modal-meta {
     position: absolute;
@@ -426,10 +457,15 @@ main {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    z-index: 2;
+    z-index: 3;
     background: rgba(0, 0, 0, 0.4);
     border-radius: 50%;
     width: 34px;
     height: 34px;
+  }
+
+  .mute-btn {
+    top: 1rem;
+    left: 1rem;
   }
 }
