@@ -141,14 +141,16 @@ function openModal(list, index) {
 
 function loadModalItem() {
   const item = currentModalList[currentModalIndex];
+  const isMobile = window.innerWidth <= 700;
   document.getElementById("modal-title").textContent = item.name;
   document.getElementById("modal-meta").textContent =
     "Évoqué dans \u00AB " + item.videoTitle + " \u00BB à " + formatTime(item.timestamp);
   document.getElementById("yt-frame").src =
     "https://www.youtube.com/embed/" + item.videoId + "?start=" + item.timestamp +
-    "&autoplay=1&mute=1&playsinline=1&enablejsapi=1";
-  isMuted = true;
+    "&autoplay=1&playsinline=1&enablejsapi=1" + (isMobile ? "&mute=1" : "");
+  isMuted = isMobile; // sur PC le son est actif d'entrée ; sur mobile ça reste muet au départ (contrainte des navigateurs)
   isPlaying = true;
+  document.getElementById("mute-toggle").hidden = !isMobile;
   document.getElementById("modal-bg").style.backgroundImage =
     "url(\"https://img.youtube.com/vi/" + item.videoId + "/hqdefault.jpg\")";
   document.getElementById("modal-prev").disabled = currentModalIndex <= 0;
