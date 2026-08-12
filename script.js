@@ -3,7 +3,7 @@ let currentSort = "video-desc"; // état par défaut : groupé par vidéo, épis
 let currentDecade = null; // ex. 2000, 2010... null = toutes
 let currentModalList = [];
 let currentModalIndex = -1;
-let isMuted = true; // les vidéos démarrent toujours en muet sur mobile (contrainte des navigateurs)
+let isPlaying = true;
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -141,16 +141,17 @@ function openModal(list, index) {
 
 function loadModalItem() {
   const item = currentModalList[currentModalIndex];
-  const isMobile = window.innerWidth <= 700;
   document.getElementById("modal-title").textContent = item.name;
   document.getElementById("modal-meta").textContent =
     "Évoqué dans \u00AB " + item.videoTitle + " \u00BB à " + formatTime(item.timestamp);
+  // Pas de mute=1 : on tente l'autoplay avec le son directement. Sur PC ça marche
+  // presque toujours ; sur mobile (Safari iOS surtout) le navigateur peut quand même
+  // bloquer le son au démarrage, c'est une politique du navigateur qu'on ne peut pas
+  // forcer depuis le code. Un tap sur la vidéo relance la lecture si besoin.
   document.getElementById("yt-frame").src =
     "https://www.youtube.com/embed/" + item.videoId + "?start=" + item.timestamp +
-    "&autoplay=1&playsinline=1&enablejsapi=1" + (isMobile ? "&mute=1" : "");
-  isMuted = isMobile; // sur PC le son est actif d'entrée ; sur mobile ça reste muet au départ (contrainte des navigateurs)
+    "&autoplay=1&playsinline=1&enablejsapi=1";
   isPlaying = true;
-  document.getElementById("mute-toggle").hidden = !isMobile;
   document.getElementById("modal-bg").style.backgroundImage =
     "url(\"https://img.youtube.com/vi/" + item.videoId + "/hqdefault.jpg\")";
   document.getElementById("modal-prev").disabled = currentModalIndex <= 0;
@@ -179,8 +180,7 @@ function closeModal() {
 }
 
 // Empêche la page principale de défiler/rebondir (effet "rubber-band" mobile) pendant
-// que la fenêtre de prévisualisation est ouverte — c'est ce qui la faisait apparaître
-// furtivement derrière la vidéo pendant un swipe.
+// que la fenêtre de prévisualisation est ouverte.
 let lockedScrollY = 0;
 
 function lockBodyScroll() {
@@ -213,19 +213,21 @@ document.getElementById("modal").addEventListener("wheel", (e) => {
   }
 }, { passive: false });
 
-// Navigation au swipe vertical (mobile) : la vidéo suit le doigt en temps réel,
-// puis "s'aimante" vers le suivant/précédent si le glissement est assez ample,
-// ou revient à sa place sinon (comme sur TikTok). Le geste est écouté sur toute la
-// fenêtre (pas juste la vidéo) pour qu'un swipe démarré sur le flou fonctionne aussi.
-// Un tap simple (peu de mouvement) met en pause/relance la vidéo.
+// Navigation au swipe (mobile uniquement) : la vidéo suit le doigt en temps réel.
+// Vertical -> dessin animé suivant/précédent ("s'aimante" si le geste est assez ample,
+// sinon revient à sa place). Horizontal -> ferme la fenêtre et revient à la page
+// principale. Un tap simple (peu de mouvement) met en pause/relance la vidéo.
 const modalCard = document.querySelector(".modal-card");
 const modalEl = document.getElementById("modal");
+let touchStartX = null;
 let touchStartY = null;
+let touchDeltaX = 0;
 let touchDeltaY = 0;
-let isPlaying = true;
 
 modalEl.addEventListener("touchstart", (e) => {
+  touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
+  touchDeltaX = 0;
   touchDeltaY = 0;
   modalCard.style.transition = "none";
 }, { passive: true });
@@ -233,8 +235,9 @@ modalEl.addEventListener("touchstart", (e) => {
 modalEl.addEventListener("touchmove", (e) => {
   if (touchStartY === null) return;
   e.preventDefault();
+  touchDeltaX = e.touches[0].clientX - touchStartX;
   touchDeltaY = e.touches[0].clientY - touchStartY;
-  modalCard.style.transform = "translateY(" + touchDeltaY + "px)";
+  modalCard.style.transform = "translate(" + touchDeltaX + "px, " + touchDeltaY + "px)";
 }, { passive: false });
 
 modalEl.addEventListener("touchend", () => {
@@ -242,24 +245,32 @@ modalEl.addEventListener("touchend", () => {
   touchStartY = null;
   modalCard.style.transition = "transform 0.25s ease";
 
-  const tapThreshold = 10; // en dessous de ça, on considère que c'est un tap, pas un swipe
+  const isMobile = window.innerWidth <= 700;
+  const tapThreshold = 10; // en dessous de ça (sur les 2 axes), on considère que c'est un tap
   const swipeThreshold = 90; // pixels à glisser avant que ça compte comme un swipe volontaire
+  const horizontalDominant = Math.abs(touchDeltaX) > Math.abs(touchDeltaY);
 
-  if (Math.abs(touchDeltaY) < tapThreshold) {
-    modalCard.style.transform = "translateY(0)";
+  if (Math.abs(touchDeltaX) < tapThreshold && Math.abs(touchDeltaY) < tapThreshold) {
+    modalCard.style.transform = "translate(0, 0)";
     togglePlayPause();
     return;
   }
 
-  const goingUp = touchDeltaY < 0; // glisser vers le haut = dessin animé suivant
+  // Swipe horizontal (mobile uniquement) : ferme la fenêtre, retour à la page principale.
+  if (isMobile && horizontalDominant && Math.abs(touchDeltaX) > swipeThreshold) {
+    modalCard.style.transform = "translateX(" + (touchDeltaX > 0 ? "100%" : "-100%") + ")";
+    setTimeout(closeModal, 200);
+    return;
+  }
 
-  if (Math.abs(touchDeltaY) > swipeThreshold) {
+  // Swipe vertical : dessin animé suivant/précédent.
+  if (!horizontalDominant && Math.abs(touchDeltaY) > swipeThreshold) {
+    const goingUp = touchDeltaY < 0; // glisser vers le haut = dessin animé suivant
     const canMove = goingUp
       ? currentModalIndex < currentModalList.length - 1
       : currentModalIndex > 0;
 
     if (canMove) {
-      // termine l'animation de sortie dans la direction du geste, puis change de contenu
       modalCard.style.transform = "translateY(" + (goingUp ? "-100%" : "100%") + ")";
       setTimeout(() => {
         goingUp ? showNextInModal() : showPrevInModal();
@@ -267,7 +278,7 @@ modalEl.addEventListener("touchend", () => {
         modalCard.style.transform = "translateY(" + (goingUp ? "100%" : "-100%") + ")";
         requestAnimationFrame(() => {
           modalCard.style.transition = "transform 0.25s ease";
-          modalCard.style.transform = "translateY(0)";
+          modalCard.style.transform = "translate(0, 0)";
         });
       }, 200);
       return;
@@ -275,7 +286,7 @@ modalEl.addEventListener("touchend", () => {
   }
 
   // pas assez de glissement (ou plus rien à afficher dans cette direction) : ça revient à sa place
-  modalCard.style.transform = "translateY(0)";
+  modalCard.style.transform = "translate(0, 0)";
 });
 
 function togglePlayPause() {
@@ -287,21 +298,6 @@ function togglePlayPause() {
     "*"
   );
 }
-
-function toggleMute() {
-  const frame = document.getElementById("yt-frame");
-  if (!frame.contentWindow) return;
-  isMuted = !isMuted;
-  frame.contentWindow.postMessage(
-    JSON.stringify({ event: "command", func: isMuted ? "mute" : "unMute", args: [] }),
-    "*"
-  );
-}
-
-document.getElementById("mute-toggle").addEventListener("click", (e) => {
-  e.stopPropagation();
-  toggleMute();
-});
 
 document.getElementById("close-modal").addEventListener("click", closeModal);
 document.getElementById("modal").addEventListener("click", (e) => {
