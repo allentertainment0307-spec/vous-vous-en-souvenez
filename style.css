@@ -164,10 +164,30 @@ main {
   outline-offset: 2px;
 }
 
-.thumb {
+.thumb-wrap {
+  position: relative;
   width: 100%;
-  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
   background: var(--surface-hover);
+}
+
+.thumb-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(20px) brightness(0.55) saturate(1.1);
+  transform: scale(1.25);
+}
+
+.thumb {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .card-body {
