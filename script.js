@@ -24,14 +24,6 @@ function getFilteredSorted() {
   return list;
 }
 
-function updateSortButtons() {
-  document.querySelectorAll(".sort-btn").forEach((btn) => {
-    const isActive = btn.dataset.sort === currentSort;
-    btn.classList.toggle("active", isActive);
-    btn.setAttribute("aria-pressed", isActive ? "true" : "false");
-  });
-}
-
 function renderGrid() {
   const list = getFilteredSorted();
   const grid = document.getElementById("grid");
@@ -98,14 +90,9 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.getElementById("search").addEventListener("input", renderGrid);
-
-document.querySelectorAll(".sort-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    // Reclique sur le tri déjà actif : retour à l'ordre par défaut (vidéo la plus récente en premier).
-    currentSort = currentSort === btn.dataset.sort ? "video-desc" : btn.dataset.sort;
-    updateSortButtons();
-    renderGrid();
-  });
+document.getElementById("sort").addEventListener("change", (e) => {
+  currentSort = e.target.value;
+  renderGrid();
 });
 
 fetch("data.json")
@@ -126,7 +113,6 @@ fetch("data.json")
     allCartoons = data.map((item, index) =>
       Object.assign({ _order: index, _groupOrder: groupOrderByVideoId[item.videoId] }, item)
     );
-    updateSortButtons();
     renderGrid();
   })
   .catch(() => {
