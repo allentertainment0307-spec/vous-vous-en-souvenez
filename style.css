@@ -101,9 +101,6 @@ main {
 
 /* Effet "spotlight" : quand une carte est survolée, elle grossit et s'illumine légèrement,
    les autres cartes de la grille sont juste un peu assombries (restent bien visibles). */
-.grid.grid-hovering .cartoon-card {
-  filter: brightness(0.8);
-}
 
 .grid .cartoon-card.hovered {
   filter: brightness(1.1);
