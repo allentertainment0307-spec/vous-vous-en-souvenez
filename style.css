@@ -32,8 +32,40 @@ main {
   justify-content: center;
   align-items: center;
   gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.decade-filter {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
   margin-bottom: 2.5rem;
   flex-wrap: wrap;
+}
+
+.decade-btn {
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.decade-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.decade-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 #search {
