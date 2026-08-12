@@ -1,6 +1,8 @@
 let allCartoons = [];
 let currentSort = "video-desc"; // état par défaut : groupé par vidéo, épisode le plus récent en premier
 let currentDecade = null; // ex. 2000, 2010... null = toutes
+let currentModalList = [];
+let currentModalIndex = -1;
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -89,7 +91,7 @@ function renderGrid() {
   }
   empty.hidden = true;
 
-  list.forEach((item) => {
+  list.forEach((item, index) => {
     const card = document.createElement("button");
     card.className = "cartoon-card";
     card.type = "button";
@@ -118,7 +120,7 @@ function renderGrid() {
 
     card.appendChild(thumbWrap);
     card.appendChild(body);
-    card.addEventListener("click", () => openModal(item));
+    card.addEventListener("click", () => openModal(list, index));
 
     // Effet de survol : la carte grossit et s'illumine.
     card.addEventListener("mouseenter", () => card.classList.add("hovered"));
@@ -128,14 +130,36 @@ function renderGrid() {
   });
 }
 
-function openModal(item) {
-  const modal = document.getElementById("modal");
+function openModal(list, index) {
+  currentModalList = list;
+  currentModalIndex = index;
+  loadModalItem();
+  document.getElementById("modal").hidden = false;
+}
+
+function loadModalItem() {
+  const item = currentModalList[currentModalIndex];
   document.getElementById("modal-title").textContent = item.name;
   document.getElementById("modal-meta").textContent =
     "Évoqué dans \u00AB " + item.videoTitle + " \u00BB à " + formatTime(item.timestamp);
   document.getElementById("yt-frame").src =
     "https://www.youtube.com/embed/" + item.videoId + "?start=" + item.timestamp + "&autoplay=1";
-  modal.hidden = false;
+  document.getElementById("modal-prev").disabled = currentModalIndex <= 0;
+  document.getElementById("modal-next").disabled = currentModalIndex >= currentModalList.length - 1;
+}
+
+function showPrevInModal() {
+  if (currentModalIndex > 0) {
+    currentModalIndex -= 1;
+    loadModalItem();
+  }
+}
+
+function showNextInModal() {
+  if (currentModalIndex < currentModalList.length - 1) {
+    currentModalIndex += 1;
+    loadModalItem();
+  }
 }
 
 function closeModal() {
@@ -144,12 +168,32 @@ function closeModal() {
   document.getElementById("yt-frame").src = "";
 }
 
+document.getElementById("modal-prev").addEventListener("click", showPrevInModal);
+document.getElementById("modal-next").addEventListener("click", showNextInModal);
+
+let wheelLocked = false;
+document.getElementById("modal").addEventListener("wheel", (e) => {
+  e.preventDefault();
+  if (wheelLocked) return;
+  wheelLocked = true;
+  setTimeout(() => { wheelLocked = false; }, 400);
+  if (e.deltaY > 0) {
+    showNextInModal();
+  } else if (e.deltaY < 0) {
+    showPrevInModal();
+  }
+}, { passive: false });
+
 document.getElementById("close-modal").addEventListener("click", closeModal);
 document.getElementById("modal").addEventListener("click", (e) => {
   if (e.target.id === "modal") closeModal();
 });
 document.addEventListener("keydown", (e) => {
+  const modal = document.getElementById("modal");
+  if (modal.hidden) return;
   if (e.key === "Escape") closeModal();
+  if (e.key === "ArrowDown") showNextInModal();
+  if (e.key === "ArrowUp") showPrevInModal();
 });
 
 document.getElementById("search").addEventListener("input", renderGrid);
