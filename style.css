@@ -37,15 +37,15 @@ main {
 
 #search {
   flex: 1;
-  max-width: 520px;
-  min-width: 220px;
-  padding: 0.85rem 1.1rem;
-  border-radius: 10px;
+  max-width: 700px;
+  min-width: 260px;
+  padding: 1.1rem 1.4rem;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
   font-family: 'Inter', sans-serif;
-  font-size: 1rem;
+  font-size: 1.15rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -99,16 +99,15 @@ main {
   }
 }
 
-/* Effet "spotlight" : quand une carte est survolée, elle grossit et s'illumine,
-   les autres cartes de la grille voient leur luminosité réduite. */
+/* Effet "spotlight" : quand une carte est survolée, elle grossit et s'illumine légèrement,
+   les autres cartes de la grille sont juste un peu assombries (restent bien visibles). */
 .grid.grid-hovering .cartoon-card {
-  filter: brightness(0.55);
-  transform: scale(1);
+  filter: brightness(0.8);
 }
 
 .grid .cartoon-card.hovered {
-  filter: brightness(1.15);
-  transform: scale(1.04);
+  filter: brightness(1.1);
+  transform: scale(1.03);
   z-index: 2;
 }
 
