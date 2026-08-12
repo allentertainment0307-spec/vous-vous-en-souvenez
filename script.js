@@ -143,7 +143,7 @@ function loadModalItem() {
   document.getElementById("modal-meta").textContent =
     "Évoqué dans \u00AB " + item.videoTitle + " \u00BB à " + formatTime(item.timestamp);
   document.getElementById("yt-frame").src =
-    "https://www.youtube.com/embed/" + item.videoId + "?start=" + item.timestamp + "&autoplay=1";
+    "https://www.youtube.com/embed/" + item.videoId + "?start=" + item.timestamp + "&autoplay=1&mute=1";
   document.getElementById("modal-bg").style.backgroundImage =
     "url(\"https://img.youtube.com/vi/" + item.videoId + "/hqdefault.jpg\")";
   document.getElementById("modal-prev").disabled = currentModalIndex <= 0;
@@ -186,21 +186,56 @@ document.getElementById("modal").addEventListener("wheel", (e) => {
   }
 }, { passive: false });
 
-// Navigation au swipe vertical (mobile) : équivalent tactile de la molette.
+// Navigation au swipe vertical (mobile) : la vidéo suit le doigt en temps réel,
+// puis "s'aimante" vers le suivant/précédent si le glissement est assez ample,
+// ou revient à sa place sinon (comme sur TikTok).
+const modalCard = document.querySelector(".modal-card");
 let touchStartY = null;
+let touchDeltaY = 0;
+
 document.getElementById("modal").addEventListener("touchstart", (e) => {
   touchStartY = e.touches[0].clientY;
-});
-document.getElementById("modal").addEventListener("touchend", (e) => {
+  touchDeltaY = 0;
+  modalCard.style.transition = "none";
+}, { passive: true });
+
+document.getElementById("modal").addEventListener("touchmove", (e) => {
   if (touchStartY === null) return;
-  const deltaY = e.changedTouches[0].clientY - touchStartY;
+  touchDeltaY = e.touches[0].clientY - touchStartY;
+  modalCard.style.transform = "translateY(" + touchDeltaY + "px)";
+}, { passive: true });
+
+document.getElementById("modal").addEventListener("touchend", () => {
+  if (touchStartY === null) return;
   touchStartY = null;
-  if (Math.abs(deltaY) < 50) return; // ignore les petits mouvements (tap, léger tremblement)
-  if (deltaY < 0) {
-    showNextInModal();
-  } else {
-    showPrevInModal();
+  modalCard.style.transition = "transform 0.25s ease";
+
+  const threshold = 90; // pixels à glisser avant que ça compte comme un swipe volontaire
+  const goingUp = touchDeltaY < 0; // glisser vers le haut = dessin animé suivant
+
+  if (Math.abs(touchDeltaY) > threshold) {
+    const canMove = goingUp
+      ? currentModalIndex < currentModalList.length - 1
+      : currentModalIndex > 0;
+
+    if (canMove) {
+      // termine l'animation de sortie dans la direction du geste, puis change de contenu
+      modalCard.style.transform = "translateY(" + (goingUp ? "-100%" : "100%") + ")";
+      setTimeout(() => {
+        goingUp ? showNextInModal() : showPrevInModal();
+        modalCard.style.transition = "none";
+        modalCard.style.transform = "translateY(" + (goingUp ? "100%" : "-100%") + ")";
+        requestAnimationFrame(() => {
+          modalCard.style.transition = "transform 0.25s ease";
+          modalCard.style.transform = "translateY(0)";
+        });
+      }, 200);
+      return;
+    }
   }
+
+  // pas assez de glissement (ou plus rien à afficher dans cette direction) : ça revient à sa place
+  modalCard.style.transform = "translateY(0)";
 });
 
 document.getElementById("close-modal").addEventListener("click", closeModal);
