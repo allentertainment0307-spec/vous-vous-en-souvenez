@@ -56,7 +56,6 @@ function renderGrid() {
       '<p class="card-name"></p><p class="card-meta"></p><p class="card-time"></p>';
     body.querySelector(".card-name").textContent = item.name;
     body.querySelector(".card-meta").textContent = item.releaseYear ? String(item.releaseYear) : "";
-    body.querySelector(".card-time").textContent = "\u25B6 " + formatTime(item.timestamp);
 
     card.appendChild(img);
     card.appendChild(body);
