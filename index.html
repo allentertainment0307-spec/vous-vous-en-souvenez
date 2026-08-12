@@ -15,13 +15,6 @@
 </head>
 <body>
 
-<header class="site-header">
-  <div class="header-inner">
-    <h1>Vous vous en souvenez ?</h1>
-    <p class="subtitle">Les dessins animés oubliés sur la chaîne ABDAL_JEL</p>
-  </div>
-</header>
-
 <main>
   <div class="toolbar">
     <input type="text" id="search" placeholder="Chercher un dessin animé..." aria-label="Rechercher un dessin animé">
@@ -30,25 +23,13 @@
       <option value="year-desc">Dessin animé : plus récent</option>
       <option value="year-asc">Dessin animé : plus ancien</option>
     </select>
-    <p id="count" class="count"></p>
   </div>
 
   <div id="grid" class="grid"></div>
   <p id="empty" class="empty" hidden>Aucun dessin animé ne correspond à ta recherche.</p>
 </main>
 
-<!-- Tes données sont ici. Modifie cette liste pour ajouter/changer des dessins animés. -->
-<script type="application/json" id="cartoons-data">
-[
-  {
-    "name": "Nom du dessin animé",
-    "image": "URL_IMAGE_ICI",
-    "videoId": "ID_VIDEO_YOUTUBE_ICI",
-    "videoTitle": "Titre de la vidéo",
-    "timestamp": 0
-  }
-]
-</script>
+<button id="back-to-top" class="back-to-top" aria-label="Revenir en haut de la page" hidden>&uarr;</button>
 
 <div id="modal" class="modal" hidden>
   <div class="modal-card">
