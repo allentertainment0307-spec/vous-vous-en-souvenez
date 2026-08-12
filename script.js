@@ -144,6 +144,8 @@ function loadModalItem() {
     "Évoqué dans \u00AB " + item.videoTitle + " \u00BB à " + formatTime(item.timestamp);
   document.getElementById("yt-frame").src =
     "https://www.youtube.com/embed/" + item.videoId + "?start=" + item.timestamp + "&autoplay=1";
+  document.getElementById("modal-bg").style.backgroundImage =
+    "url(\"https://img.youtube.com/vi/" + item.videoId + "/hqdefault.jpg\")";
   document.getElementById("modal-prev").disabled = currentModalIndex <= 0;
   document.getElementById("modal-next").disabled = currentModalIndex >= currentModalList.length - 1;
 }
