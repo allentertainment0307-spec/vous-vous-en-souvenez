@@ -3,6 +3,7 @@ let currentSort = "video-desc"; // état par défaut : groupé par vidéo, épis
 let currentDecade = null; // ex. 2000, 2010... null = toutes
 let currentModalList = [];
 let currentModalIndex = -1;
+let isMuted = true; // les vidéos démarrent toujours en muet sur mobile (contrainte des navigateurs)
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -135,6 +136,7 @@ function openModal(list, index) {
   currentModalIndex = index;
   loadModalItem();
   document.getElementById("modal").hidden = false;
+  lockBodyScroll();
 }
 
 function loadModalItem() {
@@ -143,7 +145,9 @@ function loadModalItem() {
   document.getElementById("modal-meta").textContent =
     "Évoqué dans \u00AB " + item.videoTitle + " \u00BB à " + formatTime(item.timestamp);
   document.getElementById("yt-frame").src =
-    "https://www.youtube.com/embed/" + item.videoId + "?start=" + item.timestamp + "&autoplay=1&mute=1";
+    "https://www.youtube.com/embed/" + item.videoId + "?start=" + item.timestamp +
+    "&autoplay=1&mute=1&playsinline=1&enablejsapi=1";
+  isMuted = true;
   document.getElementById("modal-bg").style.backgroundImage =
     "url(\"https://img.youtube.com/vi/" + item.videoId + "/hqdefault.jpg\")";
   document.getElementById("modal-prev").disabled = currentModalIndex <= 0;
@@ -168,6 +172,26 @@ function closeModal() {
   const modal = document.getElementById("modal");
   modal.hidden = true;
   document.getElementById("yt-frame").src = "";
+  unlockBodyScroll();
+}
+
+// Empêche la page principale de défiler/rebondir (effet "rubber-band" mobile) pendant
+// que la fenêtre de prévisualisation est ouverte — c'est ce qui la faisait apparaître
+// furtivement derrière la vidéo pendant un swipe.
+let lockedScrollY = 0;
+
+function lockBodyScroll() {
+  lockedScrollY = window.scrollY;
+  document.body.style.position = "fixed";
+  document.body.style.top = "-" + lockedScrollY + "px";
+  document.body.style.width = "100%";
+}
+
+function unlockBodyScroll() {
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.width = "";
+  window.scrollTo(0, lockedScrollY);
 }
 
 document.getElementById("modal-prev").addEventListener("click", showPrevInModal);
@@ -188,32 +212,44 @@ document.getElementById("modal").addEventListener("wheel", (e) => {
 
 // Navigation au swipe vertical (mobile) : la vidéo suit le doigt en temps réel,
 // puis "s'aimante" vers le suivant/précédent si le glissement est assez ample,
-// ou revient à sa place sinon (comme sur TikTok).
+// ou revient à sa place sinon (comme sur TikTok). Un tap simple (peu de mouvement)
+// coupe/réactive le son via l'API YouTube, puisqu'on ne peut plus taper directement
+// sur les boutons du lecteur (la couche transparente les recouvre).
 const modalCard = document.querySelector(".modal-card");
+const touchCatcher = document.getElementById("touch-catcher");
 let touchStartY = null;
 let touchDeltaY = 0;
 
-document.getElementById("modal").addEventListener("touchstart", (e) => {
+touchCatcher.addEventListener("touchstart", (e) => {
   touchStartY = e.touches[0].clientY;
   touchDeltaY = 0;
   modalCard.style.transition = "none";
 }, { passive: true });
 
-document.getElementById("modal").addEventListener("touchmove", (e) => {
+touchCatcher.addEventListener("touchmove", (e) => {
   if (touchStartY === null) return;
+  e.preventDefault();
   touchDeltaY = e.touches[0].clientY - touchStartY;
   modalCard.style.transform = "translateY(" + touchDeltaY + "px)";
-}, { passive: true });
+}, { passive: false });
 
-document.getElementById("modal").addEventListener("touchend", () => {
+touchCatcher.addEventListener("touchend", () => {
   if (touchStartY === null) return;
   touchStartY = null;
   modalCard.style.transition = "transform 0.25s ease";
 
-  const threshold = 90; // pixels à glisser avant que ça compte comme un swipe volontaire
+  const tapThreshold = 10; // en dessous de ça, on considère que c'est un tap, pas un swipe
+  const swipeThreshold = 90; // pixels à glisser avant que ça compte comme un swipe volontaire
+
+  if (Math.abs(touchDeltaY) < tapThreshold) {
+    modalCard.style.transform = "translateY(0)";
+    toggleMute();
+    return;
+  }
+
   const goingUp = touchDeltaY < 0; // glisser vers le haut = dessin animé suivant
 
-  if (Math.abs(touchDeltaY) > threshold) {
+  if (Math.abs(touchDeltaY) > swipeThreshold) {
     const canMove = goingUp
       ? currentModalIndex < currentModalList.length - 1
       : currentModalIndex > 0;
@@ -237,6 +273,16 @@ document.getElementById("modal").addEventListener("touchend", () => {
   // pas assez de glissement (ou plus rien à afficher dans cette direction) : ça revient à sa place
   modalCard.style.transform = "translateY(0)";
 });
+
+function toggleMute() {
+  const frame = document.getElementById("yt-frame");
+  if (!frame.contentWindow) return;
+  isMuted = !isMuted;
+  frame.contentWindow.postMessage(
+    JSON.stringify({ event: "command", func: isMuted ? "mute" : "unMute", args: [] }),
+    "*"
+  );
+}
 
 document.getElementById("close-modal").addEventListener("click", closeModal);
 document.getElementById("modal").addEventListener("click", (e) => {
