@@ -1,5 +1,6 @@
 let allCartoons = [];
 let currentSort = "video-desc"; // état par défaut : groupé par vidéo, épisode le plus récent en premier
+let currentDecade = null; // ex. 2000, 2010... null = toutes
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -7,9 +8,17 @@ function formatTime(seconds) {
   return m + ":" + String(s).padStart(2, "0");
 }
 
+function decadeOf(year) {
+  return Math.floor(year / 10) * 10;
+}
+
 function getFilteredSorted() {
   const q = document.getElementById("search").value.trim().toLowerCase();
   let list = allCartoons.filter((c) => c.name.toLowerCase().includes(q));
+
+  if (currentDecade !== null) {
+    list = list.filter((c) => c.releaseYear && decadeOf(c.releaseYear) === currentDecade);
+  }
 
   if (currentSort === "year-desc") {
     list = list.slice().sort((a, b) => (b.releaseYear || 0) - (a.releaseYear || 0) || (a._order - b._order));
@@ -22,6 +31,49 @@ function getFilteredSorted() {
   }
 
   return list;
+}
+
+function renderDecadeFilter() {
+  const container = document.getElementById("decade-filter");
+  const decades = Array.from(
+    new Set(allCartoons.filter((c) => c.releaseYear).map((c) => decadeOf(c.releaseYear)))
+  ).sort((a, b) => a - b);
+
+  container.innerHTML = "";
+
+  const allBtn = document.createElement("button");
+  allBtn.type = "button";
+  allBtn.className = "decade-btn";
+  allBtn.textContent = "Toutes les années";
+  allBtn.dataset.decade = "";
+  container.appendChild(allBtn);
+
+  decades.forEach((decade) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "decade-btn";
+    btn.textContent = decade + "s";
+    btn.dataset.decade = String(decade);
+    container.appendChild(btn);
+  });
+
+  updateDecadeButtons();
+
+  container.querySelectorAll(".decade-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentDecade = btn.dataset.decade === "" ? null : Number(btn.dataset.decade);
+      updateDecadeButtons();
+      renderGrid();
+    });
+  });
+}
+
+function updateDecadeButtons() {
+  document.querySelectorAll(".decade-btn").forEach((btn) => {
+    const isAll = btn.dataset.decade === "";
+    const isActive = isAll ? currentDecade === null : Number(btn.dataset.decade) === currentDecade;
+    btn.classList.toggle("active", isActive);
+  });
 }
 
 function renderGrid() {
@@ -42,11 +94,21 @@ function renderGrid() {
     card.className = "cartoon-card";
     card.type = "button";
 
+    const thumbWrap = document.createElement("div");
+    thumbWrap.className = "thumb-wrap";
+
+    const bg = document.createElement("div");
+    bg.className = "thumb-bg";
+    bg.style.backgroundImage = "url(\"" + item.image + "\")";
+
     const img = document.createElement("img");
     img.className = "thumb";
     img.src = item.image;
     img.alt = item.name;
     img.loading = "lazy";
+
+    thumbWrap.appendChild(bg);
+    thumbWrap.appendChild(img);
 
     const body = document.createElement("div");
     body.className = "card-body";
@@ -54,19 +116,13 @@ function renderGrid() {
     body.querySelector(".card-name").textContent = item.name;
     body.querySelector(".card-meta").textContent = item.releaseYear ? String(item.releaseYear) : "";
 
-    card.appendChild(img);
+    card.appendChild(thumbWrap);
     card.appendChild(body);
     card.addEventListener("click", () => openModal(item));
 
-    // Effet spotlight : au survol, la carte grossit/s'illumine, les autres s'assombrissent.
-    card.addEventListener("mouseenter", () => {
-      grid.classList.add("grid-hovering");
-      card.classList.add("hovered");
-    });
-    card.addEventListener("mouseleave", () => {
-      grid.classList.remove("grid-hovering");
-      card.classList.remove("hovered");
-    });
+    // Effet de survol : la carte grossit et s'illumine.
+    card.addEventListener("mouseenter", () => card.classList.add("hovered"));
+    card.addEventListener("mouseleave", () => card.classList.remove("hovered"));
 
     grid.appendChild(card);
   });
@@ -102,19 +158,11 @@ document.getElementById("sort").addEventListener("change", (e) => {
   renderGrid();
 });
 
-// Bouton retour en haut : apparaît après un peu de scroll, ramène en haut au clic.
-const backToTopBtn = document.getElementById("back-to-top");
-window.addEventListener("scroll", () => {
-  backToTopBtn.hidden = window.scrollY < 400;
-});
-backToTopBtn.addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
-
 fetch("data.json")
   .then((res) => res.json())
   .then((data) => {
     allCartoons = data.map((item, index) => Object.assign({ _order: index }, item));
+    renderDecadeFilter();
     renderGrid();
   })
   .catch(() => {
