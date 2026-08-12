@@ -132,9 +132,7 @@ main {
   }
 }
 
-/* Effet "spotlight" : quand une carte est survolée, elle grossit et s'illumine légèrement,
-   les autres cartes de la grille sont juste un peu assombries (restent bien visibles). */
-
+/* Effet de survol : la carte grossit et s'illumine, les autres restent normales. */
 .grid .cartoon-card.hovered {
   filter: brightness(1.1);
   transform: scale(1.03);
@@ -299,13 +297,6 @@ main {
   position: relative;
 }
 
-.modal-nav:hover { border-color: var(--accent); }
-.modal-nav:disabled { opacity: 0.3; cursor: default; }
-.modal-nav:disabled:hover { border-color: var(--border); }
-
-.modal-nav-up { top: 1rem; }
-.modal-nav-down { bottom: 1rem; }
-
 .close-btn {
   position: absolute;
   top: 0.85rem;
@@ -352,6 +343,7 @@ main {
 
 @media (prefers-reduced-motion: reduce) {
   .cartoon-card, .back-to-top { transition: none; }
+}
 
 /* Mobile uniquement : prévisualisation plein écran façon TikTok, sans les flèches
    (la navigation se fait par un swipe vertical au doigt, gérée en JS). Le fond derrière
@@ -440,5 +432,4 @@ main {
     width: 34px;
     height: 34px;
   }
-}
 }
