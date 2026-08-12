@@ -16,6 +16,23 @@
 <body>
 
 <main>
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Chercher un dessin animé..." aria-label="Rechercher un dessin animé">
+    <select id="sort" aria-label="Trier">
+      <option value="video-desc">Vidéo la plus récente (par défaut)</option>
+      <option value="year-desc">Dessin animé : plus récent</option>
+      <option value="year-asc">Dessin animé : plus ancien</option>
+    </select>
+  </div>
+
+  <div id="decade-filter" class="decade-filter" role="group" aria-label="Filtrer par décennie"></div>
+
+  <div id="grid" class="grid"></div>
+  <p id="empty" class="empty" hidden>Aucun dessin animé ne correspond à ta recherche.</p>
+</main>
+
+<button id="back-to-top" class="back-to-top" aria-label="Revenir en haut de la page" hidden>&uarr;</button>
+
 <div id="modal" class="modal" hidden>
   <button id="modal-prev" class="modal-nav modal-nav-up" aria-label="Dessin animé précédent">&uarr;</button>
   <div class="modal-card">
@@ -27,25 +44,6 @@
     <p id="modal-meta" class="modal-meta"></p>
   </div>
   <button id="modal-next" class="modal-nav modal-nav-down" aria-label="Dessin animé suivant">&darr;</button>
-</div>
-
-  <div id="decade-filter" class="decade-filter" role="group" aria-label="Filtrer par décennie"></div>
-
-  <div id="grid" class="grid"></div>
-  <p id="empty" class="empty" hidden>Aucun dessin animé ne correspond à ta recherche.</p>
-</main>
-
-<button id="back-to-top" class="back-to-top" aria-label="Revenir en haut de la page" hidden>&uarr;</button>
-
-<div id="modal" class="modal" hidden>
-  <div class="modal-card">
-    <button id="close-modal" class="close-btn" aria-label="Fermer">&times;</button>
-    <p id="modal-title" class="modal-title"></p>
-    <div class="video-wrap">
-      <iframe id="yt-frame" src="" allow="autoplay" allowfullscreen></iframe>
-    </div>
-    <p id="modal-meta" class="modal-meta"></p>
-  </div>
 </div>
 
 <script src="script.js"></script>
