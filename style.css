@@ -254,23 +254,49 @@ main {
 
 .modal[hidden] { display: none; }
 
+.modal-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  max-width: calc(1100px + 4rem);
+  width: 100%;
+}
+
+.modal-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
 .modal-nav {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
   font-size: 1.2rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.15s ease, opacity 0.15s ease;
-  z-index: 11;
+  transition: background 0.15s ease, opacity 0.15s ease;
+  backdrop-filter: blur(4px);
+}
+
+.modal-nav:hover { background: rgba(255, 255, 255, 0.28); }
+.modal-nav:disabled { opacity: 0.3; cursor: default; }
+.modal-nav:disabled:hover { background: rgba(255, 255, 255, 0.15); }
+
+.modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  max-width: 1100px;
+  width: 100%;
+  position: relative;
 }
 
 .modal-nav:hover { border-color: var(--accent); }
