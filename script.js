@@ -148,6 +148,7 @@ function loadModalItem() {
     "https://www.youtube.com/embed/" + item.videoId + "?start=" + item.timestamp +
     "&autoplay=1&mute=1&playsinline=1&enablejsapi=1";
   isMuted = true;
+  isPlaying = true;
   document.getElementById("modal-bg").style.backgroundImage =
     "url(\"https://img.youtube.com/vi/" + item.videoId + "/hqdefault.jpg\")";
   document.getElementById("modal-prev").disabled = currentModalIndex <= 0;
@@ -212,28 +213,29 @@ document.getElementById("modal").addEventListener("wheel", (e) => {
 
 // Navigation au swipe vertical (mobile) : la vidéo suit le doigt en temps réel,
 // puis "s'aimante" vers le suivant/précédent si le glissement est assez ample,
-// ou revient à sa place sinon (comme sur TikTok). Un tap simple (peu de mouvement)
-// coupe/réactive le son via l'API YouTube, puisqu'on ne peut plus taper directement
-// sur les boutons du lecteur (la couche transparente les recouvre).
+// ou revient à sa place sinon (comme sur TikTok). Le geste est écouté sur toute la
+// fenêtre (pas juste la vidéo) pour qu'un swipe démarré sur le flou fonctionne aussi.
+// Un tap simple (peu de mouvement) met en pause/relance la vidéo.
 const modalCard = document.querySelector(".modal-card");
-const touchCatcher = document.getElementById("touch-catcher");
+const modalEl = document.getElementById("modal");
 let touchStartY = null;
 let touchDeltaY = 0;
+let isPlaying = true;
 
-touchCatcher.addEventListener("touchstart", (e) => {
+modalEl.addEventListener("touchstart", (e) => {
   touchStartY = e.touches[0].clientY;
   touchDeltaY = 0;
   modalCard.style.transition = "none";
 }, { passive: true });
 
-touchCatcher.addEventListener("touchmove", (e) => {
+modalEl.addEventListener("touchmove", (e) => {
   if (touchStartY === null) return;
   e.preventDefault();
   touchDeltaY = e.touches[0].clientY - touchStartY;
   modalCard.style.transform = "translateY(" + touchDeltaY + "px)";
 }, { passive: false });
 
-touchCatcher.addEventListener("touchend", () => {
+modalEl.addEventListener("touchend", () => {
   if (touchStartY === null) return;
   touchStartY = null;
   modalCard.style.transition = "transform 0.25s ease";
@@ -243,7 +245,7 @@ touchCatcher.addEventListener("touchend", () => {
 
   if (Math.abs(touchDeltaY) < tapThreshold) {
     modalCard.style.transform = "translateY(0)";
-    toggleMute();
+    togglePlayPause();
     return;
   }
 
@@ -274,6 +276,16 @@ touchCatcher.addEventListener("touchend", () => {
   modalCard.style.transform = "translateY(0)";
 });
 
+function togglePlayPause() {
+  const frame = document.getElementById("yt-frame");
+  if (!frame.contentWindow) return;
+  isPlaying = !isPlaying;
+  frame.contentWindow.postMessage(
+    JSON.stringify({ event: "command", func: isPlaying ? "playVideo" : "pauseVideo", args: [] }),
+    "*"
+  );
+}
+
 function toggleMute() {
   const frame = document.getElementById("yt-frame");
   if (!frame.contentWindow) return;
@@ -283,6 +295,11 @@ function toggleMute() {
     "*"
   );
 }
+
+document.getElementById("mute-toggle").addEventListener("click", (e) => {
+  e.stopPropagation();
+  toggleMute();
+});
 
 document.getElementById("close-modal").addEventListener("click", closeModal);
 document.getElementById("modal").addEventListener("click", (e) => {
